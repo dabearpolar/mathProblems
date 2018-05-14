@@ -1,0 +1,37 @@
+(* 4.15 - 'checkerboardGrid' takes in two integers as dimensions for grid, gives checkerboard background, 
+counts in serpentine order, prime numbers get background of yellow, black background numbers visible, 
+mouseover indicate hover, and tooltip indicate position in grid*)
+
+checkerboardGrid[int1_Integer, int2_Integer] := 
+ Module[{mylist, myevens, myevenlist, mygrid, myflatlist, i, j, 
+   myprimes, mymouseover, mytool, x, mytooltipcoords},
+  
+  mylist = Table[n, {n, 1, int1*int2}];
+  mylist = Partition[mylist, int1];
+  myevens = Table[x, {x, 2, int2, 2}];
+  myevenlist = Reverse[mylist[[#]]] & /@ myevens;
+  myevens = {#} & /@ myevens;
+  mylist = Delete[mylist, myevens];
+  myflatlist = Flatten@mylist;
+  mygrid = Flatten@Riffle[mylist, myevenlist];
+  myprimes = Partition[PrimeQ /@ Flatten[mygrid], int1];
+  mymouseover = 
+   Mouseover[#, Framed[#, FrameStyle -> {Thick, Lighter[Blue]}]] & /@ 
+    mygrid;
+  mytool = 
+   Flatten[Position[Partition[mygrid, int1], #] & /@ mygrid, 1];
+  myDyn = 
+   Partition[Thread[Tooltip[#1, #2]] &[mymouseover, mytool], int1];
+  Grid[myDyn, 
+   Background -> {None, None, 
+     Flatten[Table[{i, j} -> 
+        If[myprimes[[i, j]] != False, Yellow, 
+         If[EvenQ[Plus @@ Floor[{i - 1, j - 1}]], Black, 
+          Background -> White]], {i, int2}, {j, int1}]]}, 
+   ItemStyle -> {None, None, 
+     Flatten[Table[{i, j} -> 
+        If[myprimes[[i, j]] === True, Black, 
+         If[EvenQ[Plus @@ Floor[{i - 1, j - 1}]], White, Black]], {i, 
+        int2}, {j, int1}]]}]]
+
+checkerboardGrid[10, 10]
